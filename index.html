@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard de Acervo Criminal — Piracicaba</title>
+  <link rel="stylesheet" href="style.css" />
+
+  <!-- Chart.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+
+  <!-- PyScript 2024 -->
+  <link rel="stylesheet" href="https://pyscript.net/releases/2024.11.1/core.css" />
+  <script type="module" src="https://pyscript.net/releases/2024.11.1/core.js"></script>
+</head>
+<body>
+
+<!-- ============================================================
+     SPLASH
+     ============================================================ -->
+<div id="splash">
+  <div class="spinner"></div>
+  <h2>Denunciados em 2025 e 2026</h2>
+  <p id="splash-msg">Carregando runtime Python e dados… (pode levar alguns segundos)</p>
+</div>
+
+<!-- ============================================================
+     APP
+     ============================================================ -->
+<div id="app">
+
+  <!-- HEADER -->
+  <header class="header">
+    <div class="header-title">
+      <h1>Denunciados em 2025 e 2026</h1>
+      <p>Promotoria de Justiça · Painel de acompanhamento processual</p>
+    </div>
+    <button id="btn-toggle-filters">☰ Filtros</button>
+    <div class="header-meta">
+      Referência: <span id="data-ref">—</span><br/>
+      1.941 feitos carregados
+    </div>
+  </header>
+
+  <!-- KPI STRIP -->
+  <div class="kpi-strip">
+    <div class="kpi-card">
+      <span class="kpi-label">Total de feitos</span>
+      <span class="kpi-value" id="kpi-total">—</span>
+    </div>
+    <div class="kpi-card alert">
+      <span class="kpi-label">Réus presos</span>
+      <span class="kpi-value" id="kpi-presos">—</span>
+    </div>
+    <div class="kpi-card alert">
+      <span class="kpi-label">Sem denúncia</span>
+      <span class="kpi-value" id="kpi-sem-den">—</span>
+    </div>
+    <div class="kpi-card alert">
+      <span class="kpi-label">Gargalo mais antigo</span>
+      <span class="kpi-value" id="kpi-mais-ant">—</span>
+    </div>
+    <div class="kpi-card">
+      <span class="kpi-label">% em fase recursal</span>
+      <span class="kpi-value" id="kpi-recursal">—</span>
+    </div>
+  </div>
+
+  <!-- BODY -->
+  <div class="body">
+
+    <!-- SIDEBAR FILTROS -->
+    <div id="sidebar">
+      <div class="sidebar-title">Filtros</div>
+
+      <div class="filter-group">
+        <label for="f-busca">Busca livre (Processo / Controle)</label>
+        <input type="text" id="f-busca" placeholder="Ex: 1500929 ou 2026/000645" />
+      </div>
+
+      <div class="filter-group">
+        <label for="f-localizacao">Promotoria (Localização Atual)</label>
+        <select id="f-localizacao" multiple></select>
+      </div>
+
+      <div class="filter-group">
+        <label for="f-vara">Vara</label>
+        <select id="f-vara" multiple></select>
+      </div>
+
+      <div class="filter-group">
+        <label for="f-classe">Classe</label>
+        <select id="f-classe" multiple></select>
+      </div>
+
+      <div class="filter-group">
+        <label for="f-fase">Fase atual</label>
+        <select id="f-fase" multiple></select>
+      </div>
+
+      <div class="filter-group">
+        <label for="f-assunto">Assunto (busca)</label>
+        <input type="text" id="f-assunto" placeholder="Ex: tráfico, violência..." />
+      </div>
+
+      <div class="filter-group">
+        <label for="f-sigilo">Sigilo</label>
+        <select id="f-sigilo">
+          <option value="todos">Todos</option>
+          <option value="público">Público</option>
+          <option value="restrito">Restrito</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label for="f-reu-preso">Réu preso</label>
+        <select id="f-reu-preso">
+          <option value="todos">Todos</option>
+          <option value="preso">Apenas presos</option>
+          <option value="solto">Apenas soltos</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label>Período de distribuição</label>
+        <div class="filter-date-row">
+          <input type="date" id="f-dist-de"  title="De" />
+          <input type="date" id="f-dist-ate" title="Até" />
+        </div>
+      </div>
+
+      <button id="btn-limpar">✕ Limpar filtros</button>
+    </div>
+
+    <!-- Overlay para fechar sidebar no mobile -->
+    <div class="sidebar-overlay" onclick="document.getElementById('sidebar').classList.remove('open')"></div>
+
+    <!-- MAIN -->
+    <main class="main">
+
+      <!-- GRÁFICOS -->
+      <div class="charts-grid">
+
+        <!-- 1. Funil de fases -->
+        <div class="chart-card">
+          <div class="chart-title">Andamento — funil de fases</div>
+          <div class="chart-canvas-wrap">
+            <canvas id="chart-fases"></canvas>
+          </div>
+        </div>
+
+        <!-- 2. Carga por Promotoria -->
+        <div class="chart-card">
+          <div class="chart-title">Carga por Promotoria</div>
+          <div class="chart-canvas-wrap">
+            <canvas id="chart-promotoria"></canvas>
+          </div>
+        </div>
+
+        <!-- 3. Composição por Classe -->
+        <div class="chart-card">
+          <div class="chart-title">Composição por Classe</div>
+          <div class="chart-canvas-wrap">
+            <canvas id="chart-classe"></canvas>
+          </div>
+        </div>
+
+        <!-- 4. Top 10 Assuntos -->
+        <div class="chart-card">
+          <div class="chart-title">Top 10 Assuntos</div>
+          <div class="chart-canvas-wrap">
+            <canvas id="chart-assuntos"></canvas>
+          </div>
+        </div>
+
+        <!-- 5. Distribuição temporal (full width) -->
+        <div class="chart-card full">
+          <div class="chart-title">Feitos distribuídos por ano</div>
+          <div class="chart-canvas-wrap">
+            <canvas id="chart-tempo"></canvas>
+          </div>
+        </div>
+
+        <!-- 6. Aging de gargalos -->
+        <div class="chart-card full">
+          <div class="chart-title">Aging — gargalos por Promotoria (sem denúncia &gt; 365 dias)</div>
+          <div class="chart-canvas-wrap">
+            <canvas id="chart-aging"></canvas>
+          </div>
+        </div>
+
+      </div><!-- /charts-grid -->
+
+      <!-- TABELA -->
+      <div class="table-card" id="table-container">
+        <div class="table-info">Carregando…</div>
+      </div>
+
+    </main><!-- /main -->
+  </div><!-- /body -->
+</div><!-- /app -->
+
+
+<!-- ============================================================
+     JavaScript — Chart.js bridge
+     ============================================================ -->
+<script>
+(function () {
+  "use strict";
+
+  // Paleta
+  const C_PRIMARY   = "#0b3a6f";
+  const C_PRIMARY_A = "rgba(11,58,111,0.75)";
+  const C_ACCENT    = "#7a1f2b";
+  const C_ACCENT_A  = "rgba(122,31,43,0.80)";
+  const C_AMBER     = "#d97706";
+
+  const PALETTE = [
+    "#0b3a6f","#2563a8","#3b82c4","#5b9fd4","#82bde0",
+    "#7a1f2b","#b84050","#d97706","#059669","#7c3aed",
+  ];
+
+  const _charts = {};
+
+  // Utilitário: criar ou obter canvas context
+  function ctx(id) {
+    return document.getElementById(id).getContext("2d");
+  }
+
+  // Opções comuns para barras horizontais
+  function barHOpts(color) {
+    return {
+      indexAxis: "y",
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: { mode: "index" },
+      },
+      scales: {
+        x: { grid: { color: "#eee" }, ticks: { font: { size: 11 } } },
+        y: {
+          grid: { display: false },
+          ticks: {
+            font: { size: 11 },
+            callback: function(val, idx) {
+              const lbl = this.getLabelForValue(val);
+              return lbl.length > 28 ? lbl.slice(0, 26) + "…" : lbl;
+            },
+          },
+        },
+      },
+    };
+  }
+
+  // Inicializa todos os charts vazios
+  window.initCharts = function () {
+    // 1. Funil de fases
+    _charts["chart-fases"] = new Chart(ctx("chart-fases"), {
+      type: "bar",
+      data: { labels: [], datasets: [{ data: [], backgroundColor: C_PRIMARY_A, borderColor: C_PRIMARY, borderWidth: 1 }] },
+      options: barHOpts(C_PRIMARY),
+    });
+
+    // 2. Carga por Promotoria
+    _charts["chart-promotoria"] = new Chart(ctx("chart-promotoria"), {
+      type: "bar",
+      data: { labels: [], datasets: [{ data: [], backgroundColor: C_PRIMARY_A, borderColor: C_PRIMARY, borderWidth: 1 }] },
+      options: barHOpts(C_PRIMARY),
+    });
+
+    // 3. Classe (doughnut)
+    _charts["chart-classe"] = new Chart(ctx("chart-classe"), {
+      type: "doughnut",
+      data: { labels: [], datasets: [{ data: [], backgroundColor: PALETTE, borderWidth: 1 }] },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { position: "right", labels: { font: { size: 11 }, boxWidth: 14 } },
+        },
+      },
+    });
+
+    // 4. Top Assuntos
+    _charts["chart-assuntos"] = new Chart(ctx("chart-assuntos"), {
+      type: "bar",
+      data: { labels: [], datasets: [{ data: [], backgroundColor: C_ACCENT_A, borderColor: C_ACCENT, borderWidth: 1 }] },
+      options: barHOpts(C_ACCENT),
+    });
+
+    // 5. Linha temporal
+    _charts["chart-tempo"] = new Chart(ctx("chart-tempo"), {
+      type: "line",
+      data: {
+        labels: [],
+        datasets: [{
+          label: "Feitos distribuídos",
+          data: [],
+          borderColor: C_PRIMARY,
+          backgroundColor: "rgba(11,58,111,0.12)",
+          fill: true,
+          tension: 0.3,
+          pointRadius: 4,
+        }],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { grid: { color: "#eee" }, ticks: { font: { size: 11 } } },
+          y: { grid: { color: "#eee" }, ticks: { font: { size: 11 } } },
+        },
+      },
+    });
+
+    // 6. Aging gargalos
+    _charts["chart-aging"] = new Chart(ctx("chart-aging"), {
+      type: "bar",
+      data: { labels: [], datasets: [{ data: [], backgroundColor: "rgba(217,119,6,0.75)", borderColor: C_AMBER, borderWidth: 1 }] },
+      options: {
+        ...barHOpts(C_AMBER),
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: (ctx) => ` ${ctx.raw} dias sem denúncia`,
+            },
+          },
+        },
+      },
+    });
+  };
+
+  // Atualiza barra horizontal
+  window.updateBarH = function (id, labelsJSON, dataJSON) {
+    const chart = _charts[id];
+    if (!chart) return;
+    chart.data.labels = JSON.parse(labelsJSON);
+    chart.data.datasets[0].data = JSON.parse(dataJSON);
+    chart.update("none");
+  };
+
+  // Atualiza rosca
+  window.updateDoughnut = function (id, labelsJSON, dataJSON) {
+    const chart = _charts[id];
+    if (!chart) return;
+    chart.data.labels = JSON.parse(labelsJSON);
+    chart.data.datasets[0].data = JSON.parse(dataJSON);
+    chart.update("none");
+  };
+
+  // Atualiza linha
+  window.updateLine = function (id, labelsJSON, dataJSON) {
+    const chart = _charts[id];
+    if (!chart) return;
+    chart.data.labels = JSON.parse(labelsJSON);
+    chart.data.datasets[0].data = JSON.parse(dataJSON);
+    chart.update("none");
+  };
+
+  // Helper genérico (não usado diretamente, mas disponível)
+  window.callChartFn = function (fn, argsStr) {
+    // argsStr é uma string de args já serializados; eval controlado
+    try {
+      eval(`window.${fn}(${argsStr})`);
+    } catch (e) {
+      console.error("callChartFn error:", e);
+    }
+  };
+
+})();
+</script>
+
+<!-- PyScript -->
+<script type="py" src="main.py" config="pyscript.toml"></script>
+
+</body>
+</html>
