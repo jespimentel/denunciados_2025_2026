@@ -1,4 +1,4 @@
-# Dashboard de Acervo Criminal — Piracicaba
+# Dashboard de Denunciados em 2025 e 2026 (até 31/05/2026) — Piracicaba
 
 Painel HTML interativo alimentado por PyScript (Python no navegador via Pyodide/WASM) + Chart.js.
 Não requer instalação: basta abrir `index.html` via servidor HTTP.
