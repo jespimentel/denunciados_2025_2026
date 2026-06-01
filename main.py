@@ -2,8 +2,7 @@
 # PyScript 2024 + pandas + Chart.js (via JS bridge)
 
 import warnings
-warnings.filterwarnings("ignore", message=".*pyarrow.*")
-warnings.filterwarnings("ignore", category=DeprecationWarning, module="pandas")
+warnings.filterwarnings("ignore", category=DeprecationWarning)
 
 import asyncio
 import json
