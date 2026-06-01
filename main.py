@@ -137,8 +137,6 @@ def update_kpis(df):
     total = len(df)
     presos    = int(df["reu_preso"].sum())
     sem_den   = int(df["sem_denuncia"].sum())
-    garg_df   = df[df["gargalo"]]
-    mais_ant  = int(garg_df["dias_desde_distribuicao"].max()) if len(garg_df) else 0
     recursal  = int(df["fase"].str.startswith("Recursal").sum())
     pct_rec   = round(100 * recursal / total, 1) if total else 0.0
 
@@ -150,7 +148,6 @@ def update_kpis(df):
     _set("kpi-total",      total)
     _set("kpi-presos",     presos)
     _set("kpi-sem-den",    sem_den)
-    _set("kpi-mais-ant",   f"{mais_ant} d")
     _set("kpi-recursal",   f"{pct_rec}%")
 
 
@@ -210,6 +207,7 @@ def update_charts(df):
     aging = (
         com_den.groupby("Localização Atual")["dias_ate_denuncia"]
         .mean()
+        .dropna()
         .round(0)
         .astype(int)
         .sort_values(ascending=False)
