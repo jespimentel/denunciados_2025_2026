@@ -66,13 +66,6 @@ def enrich(df):
 # Filtros
 # ---------------------------------------------------------------------------
 
-def _get_multi(el_id):
-    el = document.getElementById(el_id)
-    if not el:
-        return []
-    return [o.value for o in el.options if o.selected and o.value != "__all__"]
-
-
 def _get_val(el_id, default=""):
     el = document.getElementById(el_id)
     return el.value if el else default
@@ -80,10 +73,10 @@ def _get_val(el_id, default=""):
 
 def get_filter_values():
     return {
-        "localizacao": _get_multi("f-localizacao"),
-        "vara":        _get_multi("f-vara"),
-        "classe":      _get_multi("f-classe"),
-        "fase":        _get_multi("f-fase"),
+        "localizacao": _get_val("f-localizacao"),
+        "vara":        _get_val("f-vara"),
+        "classe":      _get_val("f-classe"),
+        "fase":        _get_val("f-fase"),
         "assunto":     _get_val("f-assunto").strip().lower(),
         "sigilo":      _get_val("f-sigilo", "todos"),
         "reu_preso":   _get_val("f-reu-preso", "todos"),
@@ -94,14 +87,14 @@ def get_filter_values():
 
 
 def apply_df_filters(df, f):
-    if f["localizacao"]:
-        df = df[df["Localização Atual"].isin(f["localizacao"])]
-    if f["vara"]:
-        df = df[df["Vara"].isin(f["vara"])]
-    if f["classe"]:
-        df = df[df["Classe"].isin(f["classe"])]
-    if f["fase"]:
-        df = df[df["fase"].isin(f["fase"])]
+    if f["localizacao"] not in ("todos", ""):
+        df = df[df["Localização Atual"] == f["localizacao"]]
+    if f["vara"] not in ("todos", ""):
+        df = df[df["Vara"] == f["vara"]]
+    if f["classe"] not in ("todos", ""):
+        df = df[df["Classe"] == f["classe"]]
+    if f["fase"] not in ("todos", ""):
+        df = df[df["fase"] == f["fase"]]
     if f["assunto"]:
         df = df[df["Assunto"].str.lower().str.contains(f["assunto"], na=False)]
     if f["sigilo"] not in ("todos", ""):
@@ -312,6 +305,11 @@ def populate_filters(df):
         if not el:
             return
         el.innerHTML = ""
+        # Opção neutra "Todos" sempre no topo
+        opt_all = document.createElement("option")
+        opt_all.value = "todos"
+        opt_all.textContent = "Todos"
+        el.appendChild(opt_all)
         for v in sorted(str(x) for x in values if pd.notna(x)):
             opt = document.createElement("option")
             opt.value = v
@@ -340,12 +338,7 @@ def populate_filters(df):
 
     # Botão limpar
     def clear_filters(*args):
-        for fid in ["f-localizacao", "f-vara", "f-classe", "f-fase"]:
-            el = document.getElementById(fid)
-            if el:
-                for opt in el.options:
-                    opt.selected = False
-        for fid in ["f-sigilo", "f-reu-preso"]:
+        for fid in ["f-localizacao", "f-vara", "f-classe", "f-fase", "f-sigilo", "f-reu-preso"]:
             el = document.getElementById(fid)
             if el:
                 el.value = "todos"
