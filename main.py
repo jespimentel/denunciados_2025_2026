@@ -70,7 +70,13 @@ def _get_multi(el_id):
     el = document.getElementById(el_id)
     if not el:
         return []
-    return [cb.value for cb in el.querySelectorAll("input[type=checkbox]") if cb.checked]
+    nodes = el.querySelectorAll("input")
+    result = []
+    for i in range(nodes.length):
+        cb = nodes.item(i)
+        if cb.checked:
+            result.append(cb.value)
+    return result
 
 
 def _get_val(el_id, default=""):
@@ -311,18 +317,15 @@ def populate_filters(df):
         el = document.getElementById(el_id)
         if not el:
             return
-        el.innerHTML = ""
+        parts = []
         for v in sorted(str(x) for x in values if pd.notna(x)):
-            lbl = document.createElement("label")
-            lbl.className = "cb-item"
-            cb = document.createElement("input")
-            cb.type = "checkbox"
-            cb.value = v
-            span = document.createElement("span")
-            span.textContent = v
-            lbl.appendChild(cb)
-            lbl.appendChild(span)
-            el.appendChild(lbl)
+            v_esc = v.replace('"', "&quot;").replace("<", "&lt;")
+            parts.append(
+                f'<label class="cb-item">'
+                f'<input type="checkbox" value="{v_esc}">'
+                f'<span>{v_esc}</span></label>'
+            )
+        el.innerHTML = "".join(parts)
 
     fill_select("f-localizacao", df["Localização Atual"].unique())
     fill_select("f-vara",        df["Vara"].unique())
@@ -347,8 +350,9 @@ def populate_filters(df):
         for fid in ["f-localizacao", "f-vara", "f-classe", "f-fase"]:
             el = document.getElementById(fid)
             if el:
-                for cb in el.querySelectorAll("input[type=checkbox]"):
-                    cb.checked = False
+                nodes = el.querySelectorAll("input")
+                for i in range(nodes.length):
+                    nodes.item(i).checked = False
         for fid in ["f-sigilo", "f-reu-preso"]:
             el = document.getElementById(fid)
             if el:
