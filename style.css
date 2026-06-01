@@ -221,6 +221,7 @@ body {
   border-color: var(--primary-lt);
   box-shadow: 0 0 0 2px rgba(33,150,243,.2);
 }
+.filter-group select[multiple] { height: 86px; }
 .filter-date-row { display: flex; gap: 6px; }
 .filter-date-row input { flex: 1; }
 
