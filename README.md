@@ -1,7 +1,7 @@
-# Dashboard de Denunciados em 2025 e 2026 (até 31/05/2026) — Piracicaba
+# Denunciados de 01/01/2025 a 31/05/2026 — Promotoria Crimiminal de Piracicaba
 
-Painel HTML interativo alimentado por PyScript (Python no navegador via Pyodide/WASM) + Chart.js.
-Não requer instalação: basta abrir `index.html` via servidor HTTP.
+Painel HTML interativo rodando PyScript + Chart.js.
+Não requer instalação.
 
 ## Estrutura
 
@@ -12,7 +12,7 @@ Não requer instalação: basta abrir `index.html` via servidor HTTP.
 ├── main.py           # lógica Python: carga, fase, filtros, gráficos, tabela
 ├── pyscript.toml     # declara pacotes (pandas)
 └── dados/
-    └── relatorio.csv # base completa (Público + Restrito)
+    └── relatorio.csv # base de dados
 ```
 
 ## Rodar localmente
@@ -51,7 +51,6 @@ O primeiro carregamento baixa o runtime Pyodide + pandas (~10 MB). Após isso a 
 ## Decisão de sigilo
 
 A base não contém nomes de partes ou testemunhas. O link e-SAJ é autenticado pelo próprio sistema.
-Publicação em repositório público liberada pelo titular (vide `plano_dashboard_acervo.md`).
 
 ## Notas técnicas
 

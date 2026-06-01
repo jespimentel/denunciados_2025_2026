@@ -171,11 +171,12 @@ def update_charts(df):
     data   = [int(fase_counts.get(f, 0)) for f in labels]
     window.updateBarH("chart-fases", json.dumps(labels), json.dumps(data))
 
-    # 2. Carga por Promotoria
-    loc = df.groupby("Localização Atual").size().sort_values(ascending=False)
+    # 2. Carga por Promotoria — top 8
+    loc = df.groupby("Localização Atual").size().sort_values(ascending=False).head(8)
     loc_labels = [
         l.replace("Promotor de Justiça de Piracicaba", "PJ Piracicaba")
-         .replace("º ", "º ")
+         .replace("Promotoria de Justiça Criminal de Piracicaba", "PJ Criminal")
+         .replace("Promotor de Justiça Auxiliar de Piracicaba", "PJ Auxiliar")
         for l in loc.index.tolist()
     ]
     window.updateBarH("chart-promotoria", json.dumps(loc_labels), json.dumps(loc.values.tolist()))
@@ -203,19 +204,24 @@ def update_charts(df):
         json.dumps(by_year.values.tolist()),
     )
 
-    # 6. Aging de gargalos por Promotoria
-    garg = (
-        df[df["gargalo"]]
-        .groupby("Localização Atual")["dias_desde_distribuicao"]
-        .max()
+    # 6. Aging: tempo médio Distribuição → Denúncia por Promotoria (feitos com denúncia)
+    com_den = df[df["Denúncia"].notna()].copy()
+    com_den["dias_ate_denuncia"] = (com_den["Denúncia"] - com_den["Distribuição"]).dt.days
+    aging = (
+        com_den.groupby("Localização Atual")["dias_ate_denuncia"]
+        .mean()
+        .round(0)
+        .astype(int)
         .sort_values(ascending=False)
-        .head(10)
+        .head(8)
     )
     g_labels = [
         l.replace("Promotor de Justiça de Piracicaba", "PJ Piracicaba")
-        for l in garg.index.tolist()
+         .replace("Promotoria de Justiça Criminal de Piracicaba", "PJ Criminal")
+         .replace("Promotor de Justiça Auxiliar de Piracicaba", "PJ Auxiliar")
+        for l in aging.index.tolist()
     ]
-    window.updateBarH("chart-aging", json.dumps(g_labels), json.dumps(garg.values.tolist()))
+    window.updateBarH("chart-aging", json.dumps(g_labels), json.dumps(aging.values.tolist()))
 
 
 # ---------------------------------------------------------------------------

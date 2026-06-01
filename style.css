@@ -388,15 +388,32 @@ body {
 /* ================================================================
    RESPONSIVE
    ================================================================ */
+
+/* Impede overflow horizontal em qualquer viewport */
+html, body { overflow-x: hidden; max-width: 100vw; }
+
+/* ---- Tablet / mobile ≤ 768px ---- */
 @media (max-width: 768px) {
+
+  /* Botão de filtros */
   #btn-toggle-filters { display: inline-block; }
 
+  /* Header compacto */
+  .header { padding: 10px 14px; gap: 8px; }
+  .header-title h1 { font-size: 1rem; }
+  .header-meta { display: none; }
+
+  /* KPIs: 2 colunas */
   .kpi-strip {
     grid-template-columns: 1fr 1fr;
-    padding: 12px;
-    gap: 10px;
+    padding: 10px 12px;
+    gap: 8px;
   }
+  .kpi-card { padding: 12px 14px; min-height: 80px; }
+  .kpi-value { font-size: 1.5rem; }
+  .kpi-label { font-size: .68rem; }
 
+  /* Sidebar como drawer lateral */
   .body { flex-direction: column; }
 
   #sidebar {
@@ -418,18 +435,59 @@ body {
   }
   #sidebar.open ~ .sidebar-overlay { display: block; }
 
-  .main { padding: 12px 12px 0; gap: 12px; }
-  .charts-grid { grid-template-columns: 1fr; }
-  .chart-card.full { grid-column: 1; }
+  /* Main: largura total, sem overflow */
+  .main {
+    width: 100%;
+    max-width: 100vw;
+    padding: 10px 10px 0;
+    gap: 10px;
+    overflow-x: hidden;
+  }
 
+  /* Gráficos: coluna única, alturas menores */
+  .charts-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  .chart-card.full { grid-column: 1; }
+  .chart-card { padding: 12px; }
+  .chart-canvas-wrap { height: 180px; }
+  .chart-canvas-wrap.tall { height: 220px; }
+
+  /* Tabela: oculta colunas menos críticas, scroll horizontal contido */
+  .table-card { max-width: 100%; overflow: hidden; }
+  .table-overflow { overflow-x: auto; max-width: 100%; -webkit-overflow-scrolling: touch; }
+  .data-table { min-width: 480px; font-size: .74rem; }
+
+  /* Ocultar colunas secundárias no mobile */
   .data-table thead th:nth-child(3),
-  .data-table tbody td:nth-child(3) { display: none; }
+  .data-table tbody td:nth-child(3),
+  .data-table thead th:nth-child(5),
+  .data-table tbody td:nth-child(5),
+  .data-table thead th:nth-child(9),
+  .data-table tbody td:nth-child(9) { display: none; }
 }
 
+/* ---- Smartphone ≤ 480px ---- */
 @media (max-width: 480px) {
-  .kpi-strip { grid-template-columns: 1fr; }
-  .header { padding: 10px 14px; }
-  .header-meta { display: none; }
+  .kpi-strip {
+    grid-template-columns: 1fr 1fr;
+    padding: 8px;
+    gap: 7px;
+  }
+  .kpi-card { padding: 10px 12px; min-height: 70px; }
+  .kpi-value { font-size: 1.3rem; }
+
+  .chart-canvas-wrap { height: 160px; }
+  .chart-canvas-wrap.tall { height: 200px; }
+
+  /* Tabela mínima: Processo, Fase, Link */
+  .data-table thead th:nth-child(2),
+  .data-table tbody td:nth-child(2),
+  .data-table thead th:nth-child(4),
+  .data-table tbody td:nth-child(4),
+  .data-table thead th:nth-child(6),
+  .data-table tbody td:nth-child(6) { display: none; }
 }
 
 /* ---- Scrollbar dark ---- */
