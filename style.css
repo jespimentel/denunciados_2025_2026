@@ -221,7 +221,40 @@ body {
   border-color: var(--primary-lt);
   box-shadow: 0 0 0 2px rgba(33,150,243,.2);
 }
-.filter-group select[multiple] { height: 86px; }
+/* Multi-select com checkboxes */
+.multi-select {
+  max-height: 120px;
+  overflow-y: auto;
+  border: 1px solid var(--card-border);
+  border-radius: 5px;
+  background: var(--bg);
+  display: flex;
+  flex-direction: column;
+}
+.cb-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 9px;
+  cursor: pointer;
+  font-size: .82rem;
+  color: var(--text);
+  transition: background .12s;
+  user-select: none;
+}
+.cb-item:hover { background: rgba(33,150,243,.10); }
+.cb-item input[type="checkbox"] {
+  accent-color: var(--primary-lt);
+  width: 14px; height: 14px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.cb-item:has(input:checked) {
+  background: rgba(33,150,243,.18);
+  color: #fff;
+  font-weight: 600;
+}
+
 .filter-date-row { display: flex; gap: 6px; }
 .filter-date-row input { flex: 1; }
 

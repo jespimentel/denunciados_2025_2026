@@ -82,23 +82,23 @@
       </div>
 
       <div class="filter-group">
-        <label for="f-localizacao">Promotoria (Localização Atual)</label>
-        <select id="f-localizacao" multiple></select>
+        <label>Promotoria (Localização Atual)</label>
+        <div id="f-localizacao" class="multi-select"></div>
       </div>
 
       <div class="filter-group">
-        <label for="f-vara">Vara</label>
-        <select id="f-vara" multiple></select>
+        <label>Vara</label>
+        <div id="f-vara" class="multi-select"></div>
       </div>
 
       <div class="filter-group">
-        <label for="f-classe">Classe</label>
-        <select id="f-classe" multiple></select>
+        <label>Classe</label>
+        <div id="f-classe" class="multi-select"></div>
       </div>
 
       <div class="filter-group">
-        <label for="f-fase">Fase atual</label>
-        <select id="f-fase" multiple></select>
+        <label>Fase atual</label>
+        <div id="f-fase" class="multi-select"></div>
       </div>
 
       <div class="filter-group">
@@ -375,47 +375,6 @@
     }
   };
 
-})();
-</script>
-
-<!-- Toggle livre em select[multiple]: clique simples seleciona/deseleciona sem Ctrl -->
-<script>
-(function () {
-  const MULTI_IDS = ["f-localizacao", "f-vara", "f-classe", "f-fase"];
-
-  function enableToggleClick(el) {
-    el.addEventListener("mousedown", function (e) {
-      if (e.target.tagName !== "OPTION") return;
-      e.preventDefault();
-      e.target.selected = !e.target.selected;
-      el.dispatchEvent(new Event("change", { bubbles: true }));
-    });
-    // Impede que a tecla espaço reverta a seleção padrão do browser
-    el.addEventListener("keydown", function (e) {
-      if (e.key === " ") {
-        e.preventDefault();
-        const focused = el.options[el.selectedIndex];
-        if (focused) {
-          focused.selected = !focused.selected;
-          el.dispatchEvent(new Event("change", { bubbles: true }));
-        }
-      }
-    });
-  }
-
-  // Aguarda o DOM estar pronto
-  function attachAll() {
-    MULTI_IDS.forEach(function (id) {
-      const el = document.getElementById(id);
-      if (el) enableToggleClick(el);
-    });
-  }
-
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", attachAll);
-  } else {
-    attachAll();
-  }
 })();
 </script>
 
